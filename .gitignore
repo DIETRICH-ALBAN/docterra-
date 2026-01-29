@@ -1,0 +1,13 @@
+# Next.js
+/frontend/.next/
+/frontend/node_modules/
+
+# Python
+/backend/venv/
+/backend/__pycache__/
+*.pyc
+.env
+
+# OS
+.DS_Store
+Thumbs.db
