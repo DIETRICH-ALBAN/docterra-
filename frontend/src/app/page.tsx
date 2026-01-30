@@ -42,6 +42,24 @@ export default function Home() {
   }, []);
 
   const handleLoadProject = async (docId: string) => {
+    if (docId.startsWith('TEMPLATE::')) {
+      // Chargement d'un modèle local
+      const tmplId = docId.split('::')[1];
+      const templates = require('@/lib/templates.json');
+      const tmpl = templates.find((t: any) => t.id === tmplId);
+
+      if (tmpl) {
+        setStructure({
+          title: tmpl.title,
+          sections: tmpl.sections
+        });
+        setSources([]);
+        setQuery(tmpl.title);
+        setPhase('forge');
+        return;
+      }
+    }
+
     try {
       const resp = await fetch(`http://localhost:8000/documents/${docId}`);
       const data = await resp.json();

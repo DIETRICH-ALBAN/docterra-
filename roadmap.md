@@ -6,11 +6,11 @@ Transformer DocTerra en une plateforme de synthèse multi-format (NotebookLM sty
 ---
 
 ## 🏗️ Phase 4 : Système d'Archives & Mémoire
-- [ ] **Tâche 4.1** : Créer l'endpoint `GET /documents` (Backend)
-- [ ] **Tâche 4.2** : Créer l'endpoint `GET /documents/{id}` pour le détail (Backend)
-- [ ] **Tâche 4.3** : Lier la Sidebar Frontend au fetch de Supabase (Frontend)
-- [ ] **Tâche 4.4** : UI pour la liste des archives (Tiroir ou Menu) (Frontend)
-- [ ] **Tâche 4.5** : Fonction de rechargement de projet (State management) (Frontend)
+- [x] **Tâche 4.1** : Créer l'endpoint `GET /documents` (Backend)
+- [x] **Tâche 4.2** : Créer l'endpoint `GET /documents/{id}` pour le détail (Backend)
+- [x] **Tâche 4.3** : Lier la Sidebar Frontend au fetch de Supabase (Frontend)
+- [x] **Tâche 4.4** : UI pour la liste des archives (Tiroir ou Menu) (Frontend)
+- [x] **Tâche 4.5** : Fonction de rechargement de projet (State management) (Frontend)
 
 ## 🎨 Phase 5 : Bibliothèque de Modèles
 - [ ] **Tâche 5.1** : Définir les structures JSON des modèles types (Backend)
