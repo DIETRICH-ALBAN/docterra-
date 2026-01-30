@@ -13,7 +13,7 @@ Réorienter DocTerra vers une philosophie "Ingestion -> Itération -> Output Mul
 
 ## 📥 Phase 2 : Ingestion de Sources (Nexus V2)
 *Objectif : Créer la porte d'entrée unique par les sources.*
-- [ ] **Tâche 2.1** : UI d'Upload (Drag & Drop PDF/Docx) + Input URL.
+- [x] **Tâche 2.1** : UI d'Upload (Drag & Drop PDF/Docx) + Input URL.
 - [ ] **Tâche 2.2** : Backend d'Ingestion (Extraction texte PDF + Firecrawl pour URL).
 - [ ] **Tâche 2.3** : Stockage vectoriel basique (Q&A ready).
 - [ ] **Tâche 2.4** : Affichage liste des sources "brutes" dans la Sidebar.
