@@ -23,9 +23,15 @@ const MENU_ITEMS = [
 export default function Sidebar() {
     const [active, setActive] = useState('dash');
     const [mounted, setMounted] = useState(false);
+    const [archives, setArchives] = useState<any[]>([]);
 
     useEffect(() => {
         setMounted(true);
+        // Récupération des archives si possible
+        fetch("http://localhost:8000/documents")
+            .then(res => res.json())
+            .then(data => setArchives(data))
+            .catch(() => console.log("Backend non connecté"));
     }, []);
 
     if (!mounted) return <aside className="w-64 h-screen bg-background" />;
@@ -51,30 +57,51 @@ export default function Sidebar() {
             </div>
 
             {/* Navigation */}
-            <nav className="flex flex-col gap-2">
+            <nav className="flex flex-col gap-2 overflow-y-auto custom-scrollbar pr-2">
                 {MENU_ITEMS.map((item, idx) => (
-                    <motion.div
-                        key={item.id}
-                        initial={{ x: -10, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: 0.1 * idx }}
-                        onClick={() => setActive(item.id)}
-                        className={`group relative flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all ${active === item.id
+                    <div key={item.id}>
+                        <motion.div
+                            initial={{ x: -10, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.1 * idx }}
+                            onClick={() => setActive(item.id)}
+                            className={`group relative flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all ${active === item.id
                                 ? "bg-white/5 border border-white/10 text-accent font-bold"
                                 : "text-white/40 hover:text-white hover:bg-white/[0.02]"
-                            }`}
-                    >
-                        <div className="flex items-center gap-4">
-                            <item.icon size={20} strokeWidth={active === item.id ? 2 : 1.5} />
-                            <span className="text-sm tracking-wide">{item.label}</span>
-                        </div>
+                                }`}
+                        >
+                            <div className="flex items-center gap-4">
+                                <item.icon size={20} strokeWidth={active === item.id ? 2 : 1.5} />
+                                <span className="text-sm tracking-wide">{item.label}</span>
+                            </div>
 
-                        {active === item.id && (
-                            <motion.div layoutId="active-pill" className="w-1.5 h-1.5 rounded-full bg-accent glow-cyan" />
+                            {active === item.id && (
+                                <motion.div layoutId="active-pill" className="w-1.5 h-1.5 rounded-full bg-accent glow-cyan" />
+                            )}
+
+                            <ChevronRight size={14} className={`opacity-0 group-hover:opacity-100 transition-opacity ${active === item.id ? 'hidden' : ''}`} />
+                        </motion.div>
+
+                        {/* Sous-menu Archives */}
+                        {item.id === 'history' && active === 'history' && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                className="pl-12 flex flex-col gap-3 py-4"
+                            >
+                                {archives.length > 0 ? archives.map((doc, i) => (
+                                    <div key={doc.id} className="flex flex-col group/doc cursor-pointer">
+                                        <span className="text-[11px] font-bold text-white/50 group-hover/doc:text-accent transition-colors truncate">
+                                            {doc.title}
+                                        </span>
+                                        <span className="text-[8px] text-white/10 uppercase tracking-widest">{new Date(doc.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                )) : (
+                                    <span className="text-[10px] text-white/10 italic">Aucun document archivé</span>
+                                )}
+                            </motion.div>
                         )}
-
-                        <ChevronRight size={14} className={`opacity-0 group-hover:opacity-100 transition-opacity ${active === item.id ? 'hidden' : ''}`} />
-                    </motion.div>
+                    </div>
                 ))}
             </nav>
 
