@@ -38,26 +38,70 @@ export default function Forge({ structure, query, sources = [], onBack }: any) {
         }
     }, [structure]);
 
-    const handleRefineSection = (index: number) => {
-        // Simulation d'une action d'alchimie
+    const handleRefineSection = async (index: number) => {
+        const section = docContent[index];
+
+        // Mise en état de chargement
         const newContent = [...docContent];
-        newContent[index] = {
-            ...newContent[index],
-            content: "Analyse approfondie en cours... L'IA intègre les données du Nexus pour enrichir cette section spécifique.",
-            isGenerating: true
-        };
+        newContent[index] = { ...section, isGenerating: true };
         setDocContent(newContent);
 
-        // Simulation de réponse serveur après 2s
-        setTimeout(() => {
+        try {
+            const response = await fetch("http://localhost:8000/refine", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: section.title,
+                    content: section.brief || section.content,
+                    query: query,
+                    instruction: "Enrichis cette section avec des données factuelles et un style académique premium."
+                }),
+            });
+            const data = await response.json();
+
+            // Mise à jour avec le vrai contenu de l'IA
             const updatedContent = [...newContent];
             updatedContent[index] = {
                 ...updatedContent[index],
-                content: "Cette section a été enrichie avec les données statistiques de 2025. L'analyse démontre une croissance de 40% des infrastructures numériques, corrélée directement aux investissements du secteur privé identifiés dans le rapport de l'ONU.",
+                content: data.content,
                 isGenerating: false
             };
             setDocContent(updatedContent);
-        }, 2000);
+
+        } catch (error) {
+            alert("Erreur Nexus : Impossible de contacter l'intelligence centrale.");
+            const updatedContent = [...newContent];
+            updatedContent[index] = { ...updatedContent[index], isGenerating: false };
+            setDocContent(updatedContent);
+        }
+    };
+
+    const handleExport = async (type: 'report' | 'slides') => {
+        const payload = {
+            data: {
+                title: structure?.title || "Rapport DocTerra",
+                sections: docContent.map((s: any) => ({
+                    title: s.title,
+                    content: s.content || s.brief
+                }))
+            }
+        };
+
+        try {
+            const endpoint = type === 'report' ? '/prism/report' : '/prism/slides';
+            const response = await fetch(`http://localhost:8000${endpoint}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                window.open(`http://localhost:8000/download/${data.filename}`, '_blank');
+            }
+        } catch (error) {
+            alert("Erreur lors de la génération du fichier.");
+        }
     };
 
     return (
@@ -97,10 +141,64 @@ export default function Forge({ structure, query, sources = [], onBack }: any) {
                             </div>
                         ))}
                     </div>
-                    <button className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest glow-cyan hover:scale-105 active:scale-95 transition-all">
-                        <Download size={14} strokeWidth={3} />
-                        Exporter DOCX
-                    </button>
+
+                    <div className="relative group">
+                        <button className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest glow-cyan hover:scale-105 active:scale-95 transition-all">
+                            <Sparkles size={14} strokeWidth={3} className="text-accent" />
+                            Déployer le Prisme
+                        </button>
+
+                        {/* Menu Prisme (Dropdown Premium) */}
+                        <div className="absolute right-0 top-full mt-4 w-64 bg-black/90 backdrop-blur-3xl border border-white/10 rounded-[2rem] p-4 opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto transition-all duration-500 shadow-[0_0_50px_rgba(0,0,0,0.5)] z-[100]">
+                            <div className="flex flex-col gap-2">
+                                <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] px-4 pb-2">Sélectionnez le format final</span>
+
+                                <button
+                                    onClick={() => handleExport('report')}
+                                    className="w-full flex items-center justify-between p-4 hover:bg-white/5 rounded-2xl transition-all group/item text-left"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-red-500/10 rounded-xl text-red-500"><FileText size={16} /></div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Rapport DOCX</span>
+                                    </div>
+                                    <Download size={14} className="text-white/20 group-hover/item:text-white transition-colors" />
+                                </button>
+
+                                <button
+                                    onClick={() => handleExport('slides')}
+                                    className="w-full flex items-center justify-between p-4 hover:bg-white/5 rounded-2xl transition-all group/item text-left"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-orange-500/10 rounded-xl text-orange-500"><Share2 size={16} /></div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Slides PPTX</span>
+                                    </div>
+                                    <Download size={14} className="text-white/20 group-hover/item:text-white transition-colors" />
+                                </button>
+
+                                <button
+                                    onClick={() => alert("Génération de l'Audio Brief en cours... (Coming Soon)")}
+                                    className="w-full flex items-center justify-between p-4 hover:bg-white/5 rounded-2xl transition-all group/item text-left"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-purple-500/10 rounded-xl text-purple-500"><MessageSquare size={16} /></div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Audio Brief</span>
+                                    </div>
+                                    <Zap size={14} className="text-white/20 group-hover/item:text-white transition-colors" />
+                                </button>
+
+                                <button
+                                    onClick={() => alert("Génération de la Mind Map en cours... (Coming Soon)")}
+                                    className="w-full flex items-center justify-between p-4 hover:bg-white/5 rounded-2xl transition-all group/item text-left"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-accent/10 rounded-xl text-accent"><Database size={16} /></div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Mind Map</span>
+                                    </div>
+                                    <Share2 size={14} className="text-white/20 group-hover/item:text-white transition-colors" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -210,8 +308,8 @@ export default function Forge({ structure, query, sources = [], onBack }: any) {
                                     transition={{ delay: 0.2 + idx * 0.1 }}
                                     onClick={() => setSelectedSection(idx)}
                                     className={`relative p-16 rounded-[2.5rem] border transition-all duration-700 cursor-pointer group ${selectedSection === idx
-                                            ? "bg-white/[0.03] border-accent/20 shadow-[0_0_100px_rgba(0,209,255,0.03)]"
-                                            : "bg-transparent border-transparent grayscale hover:grayscale-0 hover:bg-white/[0.01]"
+                                        ? "bg-white/[0.03] border-accent/20 shadow-[0_0_100px_rgba(0,209,255,0.03)]"
+                                        : "bg-transparent border-transparent grayscale hover:grayscale-0 hover:bg-white/[0.01]"
                                         }`}
                                 >
                                     <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-[120px] font-black italic text-white/[0.02] pointer-events-none select-none">

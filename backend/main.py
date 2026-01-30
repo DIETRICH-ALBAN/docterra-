@@ -5,20 +5,21 @@ from services.scout import DocScout
 from services.writer import DocWriter
 from services.generator import DocGenerator
 from services.database import DatabaseService
+from services.slides import SlidesGenerator # Nouveau service
 import os
 import uuid
 from typing import Optional
 
 app = FastAPI(title="DocTerra API", version="1.0")
 
-# Chargement des variables d'environnement si nécessaire (déjà fait dans les services)
+# Services
 scout = DocScout()
 writer = DocWriter()
-# Utilisation d'un dossier 'exports' pour les fichiers générés
 generator = DocGenerator(output_dir="exports")
+slides_gen = SlidesGenerator(output_dir="exports")
 db = DatabaseService()
 
-# Configuration CORS pour le frontend Next.js
+# Configuration CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,19 +35,16 @@ async def root():
 @app.post("/scout")
 async def perform_scout(payload: dict):
     query = payload.get("query")
-    user_id = payload.get("user_id", str(uuid.uuid4())) # ID temporaire si non fourni
+    user_id = payload.get("user_id", str(uuid.uuid4()))
     
     if not query:
         raise HTTPException(status_code=400, detail="Query is required")
     
-    # 1. Création de l'entrée Document dans Supabase
     doc_res = db.save_document(user_id, f"Recherche : {query}", "", "")
     doc_id = doc_res.data[0]['id']
     
-    # 2. Recherche et Extraction réelle via Firecrawl
     results = await scout.search_and_extract(query)
     
-    # 3. Sauvegarde des sources dans Supabase
     saved_sources = []
     for res in results:
         source_data = {
@@ -57,7 +55,6 @@ async def perform_scout(payload: dict):
             "content": res.get("markdown", res.get("content", "")),
             "status": "analysed"
         }
-        # Insertion individuelle (on pourrait optimiser avec insert([]) si le SDK le permet proprement ici)
         from services.database import supabase
         s_res = supabase.table("sources").insert(source_data).execute()
         saved_sources.append(s_res.data[0])
@@ -82,7 +79,6 @@ async def generate_doc_structure(payload: dict):
     
     structure = await writer.generate_structure(topic, context)
     
-    # facultatif : on pourrait sauvegarder la structure (sections) dans Supabase ici
     if doc_id and "sections" in structure:
         from services.database import supabase
         for i, section in enumerate(structure["sections"]):
@@ -96,30 +92,92 @@ async def generate_doc_structure(payload: dict):
             
     return structure
 
-@app.post("/generate")
-async def generate_document(payload: dict):
-    template = payload.get("template", "default.docx")
-    data = payload.get("data")
-    doc_id = payload.get("doc_id")
+@app.get("/documents")
+async def list_documents(user_id: str = "default_user"):
+    from services.database import supabase
+    res = supabase.table("documents").select("id, title, created_at, status").eq("user_id", user_id).order("created_at", desc=True).execute()
+    return res.data
+
+@app.get("/documents/{doc_id}")
+async def get_document_full(doc_id: str):
+    from services.database import supabase
+    # Récupérer le doc
+    doc = supabase.table("documents").select("*").eq("id", doc_id).single().execute()
+    # Récupérer les sources
+    sources = supabase.table("sources").select("*").eq("document_id", doc_id).execute()
+    # Récupérer les sections
+    sections = supabase.table("sections").select("*").eq("document_id", doc_id).order("sort_order").execute()
     
+    return {
+        "document": doc.data,
+        "sources": sources.data,
+        "sections": sections.data
+    }
+
+@app.post("/refine")
+async def refine_section(payload: dict):
+    section_content = payload.get("content")
+    section_title = payload.get("title")
+    query = payload.get("query")
+    instruction = payload.get("instruction", "Enrichis cette section avec des données factuelles et un style académique premium.")
+    
+    if not section_title:
+        raise HTTPException(status_code=400, detail="Title is required")
+
+    prompt = f"""
+    Contexte : Rédaction d'un rapport sur '{query}'.
+    Section : {section_title}
+    Contenu actuel : {section_content}
+    
+    Instruction : {instruction}
+    
+    Tâche : Réécris ce paragraphe pour qu'il soit dense, informatif et parfaitement structuré (env. 150 mots). Utilise un ton d'expert.
+    """
+    
+    try:
+        response = writer.client.chat.completions.create(
+            model="gpt-4-turbo-preview",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        new_content = response.choices[0].message.content
+        return {"content": new_content}
+    except Exception as e:
+         return {"content": f"Erreur d'alchimie : {str(e)}", "error": True}
+
+# --- NOUVEAUX ENDPOINTS DE PRISME (MULTI-FORMAT) ---
+
+@app.post("/prism/report")
+async def generate_report(payload: dict):
+    data = payload.get("data")
     if not data:
         raise HTTPException(status_code=400, detail="Data is required")
     
-    file_name = f"{data.get('title', 'document').replace(' ', '_')}_{uuid.uuid4().hex[:8]}"
-    output_path = generator.generate_docx(template, data, file_name)
+    file_name = f"Report_{uuid.uuid4().hex[:8]}"
+    output_path = generator.generate_docx("default.docx", data, file_name)
+    return {"status": "success", "file_path": output_path, "filename": f"{file_name}.docx"}
+
+@app.post("/prism/slides")
+async def generate_slides(payload: dict):
+    data = payload.get("data")
+    if not data:
+        raise HTTPException(status_code=400, detail="Data is required")
     
-    # Mise à jour du document dans Supabase avec le lien du fichier
-    if doc_id:
-        from services.database import supabase
-        supabase.table("documents").update({"file_path": output_path, "status": "completed"}).eq("id", doc_id).execute()
-        
-    return {"status": "success", "file_path": output_path}
+    file_name = f"Slides_{uuid.uuid4().hex[:8]}"
+    output_path = slides_gen.generate_slides(data, file_name)
+    return {"status": "success", "file_path": output_path, "filename": f"{file_name}.pptx"}
 
 @app.get("/download/{filename}")
 async def download_file(filename: str):
     file_path = os.path.join("exports", filename)
     if os.path.exists(file_path):
-        return FileResponse(file_path, media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', filename=filename)
+        # Déterminer le media type
+        media_type = 'application/octet-stream'
+        if filename.endswith(".docx"):
+            media_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        elif filename.endswith(".pptx"):
+            media_type = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        
+        return FileResponse(file_path, media_type=media_type, filename=filename)
     raise HTTPException(status_code=404, detail="Fichier introuvable")
 
 if __name__ == "__main__":

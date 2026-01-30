@@ -1,27 +1,27 @@
-# Roadmap Atomique : DocTerra Kickoff
+# Roadmap Atomique DocTerra (Planner SOP)
 
-Projet supervisé par le Project Manager WebTerra.
-
-## North Star
-**"Zéro friction entre l'idée et le document final de classe mondiale."**
-
-## Phase 1 : Fondations (Sprint 1) - `Estimated: 3 days`
-- [ ] Initialisation du projet Next.js avec le Design System atomique.
-- [ ] Mise en place du Backend Python FastAPI et des endpoints de base.
-- [ ] Test de "Template Injection" : Réussir à modifier un nom sur une page de garde Word sans casser le logo.
-
-## Phase 2 : Intelligence & Scraping (Sprint 2) - `Estimated: 4 days`
-- [ ] Intégration du script "Market Scout" pour la recherche web automatique.
-- [ ] Développement de la logique d'expansion de texte (Markdown -> Contenu riche).
-
-## Phase 3 : Design & UX (Sprint 3) - `Estimated: 5 days`
-- [ ] Implémentation du modèle visuel choisi par l'utilisateur.
-- [ ] Création du tableau de bord "Soft" avec prévisualisation en temps réel.
-
-## Phase 4 : Déploiement & Trigger (Sprint 4) - `Estimated: 2 days`
-- [ ] CI/CD sur Vercel/Railway.
-- [ ] Test final de génération de rapport de 50 pages.
+## 🎯 Project Goal
+Transformer DocTerra en une plateforme de synthèse multi-format (NotebookLM style) avec persistance de données.
 
 ---
-**Budget Estimé (Simulé)** : 120 Heures de développement agence.
-**Date de Livraison Cible** : 15 Février 2026.
+
+## 🏗️ Phase 4 : Système d'Archives & Mémoire
+- [ ] **Tâche 4.1** : Créer l'endpoint `GET /documents` (Backend)
+- [ ] **Tâche 4.2** : Créer l'endpoint `GET /documents/{id}` pour le détail (Backend)
+- [ ] **Tâche 4.3** : Lier la Sidebar Frontend au fetch de Supabase (Frontend)
+- [ ] **Tâche 4.4** : UI pour la liste des archives (Tiroir ou Menu) (Frontend)
+- [ ] **Tâche 4.5** : Fonction de rechargement de projet (State management) (Frontend)
+
+## 🎨 Phase 5 : Bibliothèque de Modèles
+- [ ] **Tâche 5.1** : Définir les structures JSON des modèles types (Backend)
+- [ ] **Tâche 5.2** : Créer l'interface de sélection de modèles (Frontend)
+- [ ] **Tâche 5.3** : Injection de modèle dans la Forge (Frontend)
+
+## 🌈 Phase 6 : Outputs Avancés (Le Prisme)
+- [ ] **Tâche 6.1** : Finaliser l'export PPTX (Service & Download) (Backend)
+- [ ] **Tâche 6.2** : Module Audio Brief avec OpenAI TTS (Backend)
+- [ ] **Tâche 6.3** : Interface Audio Player dans la Forge (Frontend)
+- [ ] **Tâche 6.4** : Visualisation MindMap (Frontend)
+
+---
+*Statut : Tâche 4.1 en préparation.*
