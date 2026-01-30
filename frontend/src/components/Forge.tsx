@@ -18,11 +18,16 @@ import {
     Terminal,
     Wand2
 } from "lucide-react";
+import NexusIngest from "./NexusIngest";
 
 export default function Forge({ structure, query, sources = [], onBack }: any) {
     const [selectedSection, setSelectedSection] = useState<number | null>(null);
     const [localSources, setLocalSources] = useState(sources);
     const [chatInput, setChatInput] = useState("");
+
+    const handleAddSource = (newSource: any) => {
+        setLocalSources((prev: any) => [newSource, ...prev]);
+    };
 
     // État local pour le contenu du document (Vide par défaut)
     const [docContent, setDocContent] = useState<any[]>(structure?.sections || []);
