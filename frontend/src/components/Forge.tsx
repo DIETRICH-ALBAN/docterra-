@@ -20,16 +20,12 @@ import {
 } from "lucide-react";
 
 export default function Forge({ structure, query, sources = [], onBack }: any) {
-    const [selectedSection, setSelectedSection] = useState<number | null>(0);
-    const [localSources, setLocalSources] = useState(sources.length > 0 ? sources : [
-        { title: "Rapport de l'ONU sur l'IA 2025", type: "pdf", status: "analysed" },
-        { title: "Statistiques Tech Afrique 2030", type: "web", status: "analysed" },
-        { title: "Étude de cas WebTerra", type: "docx", status: "processing" }
-    ]);
+    const [selectedSection, setSelectedSection] = useState<number | null>(null);
+    const [localSources, setLocalSources] = useState(sources);
     const [chatInput, setChatInput] = useState("");
 
-    // État local pour le contenu du document afin de permettre l'édition en temps réel
-    const [docContent, setDocContent] = useState(structure?.sections || []);
+    // État local pour le contenu du document (Vide par défaut)
+    const [docContent, setDocContent] = useState<any[]>(structure?.sections || []);
 
     // Met à jour le contenu local si la structure change (ex: première génération)
     useEffect(() => {

@@ -12,11 +12,9 @@ import {
     ChevronRight
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import templatesData from '@/lib/templates.json';
 
 const MENU_ITEMS = [
     { id: 'dash', icon: LayoutDashboard, label: "Console" },
-    { id: 'templates', icon: FileText, label: "Modèles" },
     { id: 'history', icon: History, label: "Archives" },
     { id: 'settings', icon: Settings, label: "Système" },
 ];
@@ -82,28 +80,6 @@ export default function Sidebar({ onLoadProject }: any) {
 
                             <ChevronRight size={14} className={`opacity-0 group-hover:opacity-100 transition-opacity ${active === item.id ? 'hidden' : ''}`} />
                         </motion.div>
-
-                        {/* Sous-menu Modèles */}
-                        {item.id === 'templates' && active === 'templates' && (
-                            <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                className="pl-12 flex flex-col gap-3 py-4"
-                            >
-                                {templatesData.map((tmpl, i) => (
-                                    <div
-                                        key={tmpl.id}
-                                        onClick={() => onLoadProject(`TEMPLATE::${tmpl.id}`)} // Hack temporaire pour charger un template
-                                        className="flex flex-col group/tmpl cursor-pointer"
-                                    >
-                                        <span className="text-[11px] font-bold text-white/50 group-hover/tmpl:text-accent transition-colors truncate">
-                                            {tmpl.title}
-                                        </span>
-                                        <span className="text-[8px] text-white/20 italic truncate max-w-[180px]">{tmpl.description}</span>
-                                    </div>
-                                ))}
-                            </motion.div>
-                        )}
 
                         {/* Sous-menu Archives */}
                         {item.id === 'history' && active === 'history' && (
