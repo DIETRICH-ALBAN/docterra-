@@ -41,6 +41,23 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const handleLoadProject = async (docId: string) => {
+    try {
+      const resp = await fetch(`http://localhost:8000/documents/${docId}`);
+      const data = await resp.json();
+
+      setStructure({
+        title: data.document.title,
+        sections: data.sections
+      });
+      setSources(data.sources);
+      setQuery(data.document.title);
+      setPhase('forge');
+    } catch (error) {
+      alert("Erreur Nexus : Impossible de charger l'archive.");
+    }
+  };
+
   if (!mounted) return <div className="bg-background min-h-screen" />;
 
   const handleStructureGenerated = (data: any, searchQuery: string, scanSources: any[]) => {
@@ -52,7 +69,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen selection:bg-accent/40 selection:text-white bg-[#050505] overflow-hidden">
-      <Sidebar />
+      <Sidebar onLoadProject={handleLoadProject} />
 
       <AnimatePresence mode="wait">
         {phase === 'scout' ? (

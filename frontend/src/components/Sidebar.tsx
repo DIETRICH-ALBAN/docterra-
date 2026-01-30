@@ -20,7 +20,7 @@ const MENU_ITEMS = [
     { id: 'settings', icon: Settings, label: "Système" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onLoadProject }: any) {
     const [active, setActive] = useState('dash');
     const [mounted, setMounted] = useState(false);
     const [archives, setArchives] = useState<any[]>([]);
@@ -90,7 +90,11 @@ export default function Sidebar() {
                                 className="pl-12 flex flex-col gap-3 py-4"
                             >
                                 {archives.length > 0 ? archives.map((doc, i) => (
-                                    <div key={doc.id} className="flex flex-col group/doc cursor-pointer">
+                                    <div
+                                        key={doc.id}
+                                        onClick={() => onLoadProject(doc.id)}
+                                        className="flex flex-col group/doc cursor-pointer"
+                                    >
                                         <span className="text-[11px] font-bold text-white/50 group-hover/doc:text-accent transition-colors truncate">
                                             {doc.title}
                                         </span>
