@@ -12,15 +12,15 @@ export default function Home() {
   const [phase, setPhase] = useState<'scout' | 'forge'>('scout');
   const [structure, setStructure] = useState<any>(null);
   const [query, setQuery] = useState("");
+  const [sources, setSources] = useState<any[]>([]);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Bypass pour le test visuel - À retirer après validation
+  // Bypass pour le test visuel - Ctrl + Shift + F
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl + Shift + F pour forcer la Forge
       if (e.key === 'F' && e.ctrlKey && e.shiftKey) {
         setPhase('forge');
         setStructure({
@@ -31,6 +31,10 @@ export default function Home() {
             { title: "Éducation & Capital Humain", brief: "La formation des talents WebTerra." }
           ]
         });
+        setSources([
+          { title: "Rapport ONU 2025", type: "pdf", status: "analysed" },
+          { title: "Étude Statistique Afrique", type: "web", status: "analysed" }
+        ]);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -39,14 +43,15 @@ export default function Home() {
 
   if (!mounted) return <div className="bg-background min-h-screen" />;
 
-  const handleStructureGenerated = (data: any, searchQuery: string) => {
+  const handleStructureGenerated = (data: any, searchQuery: string, scanSources: any[]) => {
     setStructure(data);
     setQuery(searchQuery);
+    setSources(scanSources);
     setPhase('forge');
   };
 
   return (
-    <main className="flex min-h-screen selection:bg-accent/40 selection:text-white bg-[#050505]">
+    <main className="flex min-h-screen selection:bg-accent/40 selection:text-white bg-[#050505] overflow-hidden">
       <Sidebar />
 
       <AnimatePresence mode="wait">
@@ -95,7 +100,7 @@ export default function Home() {
               <span>© 2026 WebTerra Agency - Core System</span>
               <div className="flex gap-6">
                 <span>Status: Optimal</span>
-                <span>Latency: 14ms</span>
+                <span>Latency: {14 + Math.floor(Math.random() * 5)}ms</span>
               </div>
             </footer>
           </motion.section>
@@ -103,6 +108,7 @@ export default function Home() {
           <Forge
             structure={structure}
             query={query}
+            sources={sources}
             onBack={() => setPhase('scout')}
           />
         )}

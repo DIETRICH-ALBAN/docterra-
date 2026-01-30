@@ -15,17 +15,50 @@ import {
     Plus,
     X,
     ExternalLink,
-    Terminal
+    Terminal,
+    Wand2
 } from "lucide-react";
 
 export default function Forge({ structure, query, sources = [], onBack }: any) {
-    const [selectedSection, setSelectedSection] = useState(0);
+    const [selectedSection, setSelectedSection] = useState<number | null>(0);
     const [localSources, setLocalSources] = useState(sources.length > 0 ? sources : [
         { title: "Rapport de l'ONU sur l'IA 2025", type: "pdf", status: "analysed" },
         { title: "Statistiques Tech Afrique 2030", type: "web", status: "analysed" },
         { title: "Étude de cas WebTerra", type: "docx", status: "processing" }
     ]);
     const [chatInput, setChatInput] = useState("");
+
+    // État local pour le contenu du document afin de permettre l'édition en temps réel
+    const [docContent, setDocContent] = useState(structure?.sections || []);
+
+    // Met à jour le contenu local si la structure change (ex: première génération)
+    useEffect(() => {
+        if (structure?.sections) {
+            setDocContent(structure.sections);
+        }
+    }, [structure]);
+
+    const handleRefineSection = (index: number) => {
+        // Simulation d'une action d'alchimie
+        const newContent = [...docContent];
+        newContent[index] = {
+            ...newContent[index],
+            content: "Analyse approfondie en cours... L'IA intègre les données du Nexus pour enrichir cette section spécifique.",
+            isGenerating: true
+        };
+        setDocContent(newContent);
+
+        // Simulation de réponse serveur après 2s
+        setTimeout(() => {
+            const updatedContent = [...newContent];
+            updatedContent[index] = {
+                ...updatedContent[index],
+                content: "Cette section a été enrichie avec les données statistiques de 2025. L'analyse démontre une croissance de 40% des infrastructures numériques, corrélée directement aux investissements du secteur privé identifiés dans le rapport de l'ONU.",
+                isGenerating: false
+            };
+            setDocContent(updatedContent);
+        }, 2000);
+    };
 
     return (
         <motion.div
@@ -92,7 +125,7 @@ export default function Forge({ structure, query, sources = [], onBack }: any) {
 
                         {/* Source Cards */}
                         <div className="flex flex-col gap-3">
-                            {localSources.map((source, i) => (
+                            {localSources.map((source: any, i: number) => (
                                 <motion.div
                                     key={i}
                                     initial={{ opacity: 0, y: 10 }}
@@ -169,7 +202,7 @@ export default function Forge({ structure, query, sources = [], onBack }: any) {
 
                         {/* Document Content Blocks */}
                         <div className="flex flex-col gap-16 pb-32">
-                            {structure?.sections?.map((section: any, idx: number) => (
+                            {docContent.map((section: any, idx: number) => (
                                 <motion.div
                                     key={idx}
                                     initial={{ opacity: 0, y: 30 }}
@@ -198,19 +231,32 @@ export default function Forge({ structure, query, sources = [], onBack }: any) {
                                             </div>
                                         </div>
 
-                                        <p className={`text-2xl leading-relaxed text-justify transition-all duration-1000 ${selectedSection === idx ? "text-white/70" : "text-white/10"
-                                            } font-serif italic`}>
-                                            {section.content || section.brief || "En attente des données du Nexus..."}
-                                        </p>
+                                        <div className={`text-2xl leading-relaxed text-justify transition-all duration-1000 ${selectedSection === idx ? "text-white/70" : "text-white/10"
+                                            } font-serif italic min-h-[100px]`}>
+                                            {section.isGenerating ? (
+                                                <div className="flex items-center gap-3 text-accent animate-pulse">
+                                                    <Wand2 className="animate-spin" size={20} />
+                                                    <span>Alchimie en cours...</span>
+                                                </div>
+                                            ) : (
+                                                section.content || section.brief || "En attente des données du Nexus..."
+                                            )}
+                                        </div>
 
                                         {/* Action micro-pannel inside section */}
-                                        {selectedSection === idx && (
+                                        {selectedSection === idx && !section.isGenerating && (
                                             <motion.div
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 className="flex gap-4 pt-10"
                                             >
-                                                <button className="px-6 py-3 rounded-xl border border-white/10 text-[10px] uppercase font-black tracking-widest hover:bg-accent/10 hover:border-accent/40 transition-all text-accent group">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRefineSection(idx);
+                                                    }}
+                                                    className="px-6 py-3 rounded-xl border border-white/10 text-[10px] uppercase font-black tracking-widest hover:bg-accent/10 hover:border-accent/40 transition-all text-accent group"
+                                                >
                                                     Affiner cet axe
                                                     <Zap size={12} className="inline ml-2 group-hover:fill-accent transition-all" />
                                                 </button>

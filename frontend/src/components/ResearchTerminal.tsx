@@ -13,6 +13,7 @@ export default function ResearchTerminal({ onStructureReady }: any) {
     const [logs, setLogs] = useState<string[]>([]);
     const [result, setResult] = useState<string | null>(null);
     const [structure, setStructure] = useState<any | null>(null);
+    const [lastScanResults, setLastScanResults] = useState<any[]>([]);
 
     useEffect(() => {
         setMounted(true);
@@ -25,6 +26,7 @@ export default function ResearchTerminal({ onStructureReady }: any) {
         setLogs(["Initialisation du moteur DocScout...", `Analyse de la requête : ${query}`]);
 
         try {
+            // Étape 1 : Scouting Web (Firecrawl + Supabase initialisation)
             const response = await fetch("http://localhost:8000/scout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -34,11 +36,17 @@ export default function ResearchTerminal({ onStructureReady }: any) {
             const data = await response.json();
             setLogs(prev => [...prev, "Accès au Web mondial via Node AG-1...", "Sources identifiées. Extraction en cours...", "Formatage Markdown académique..."]);
             setResult(data.markdown);
+            setLastScanResults(data.results || []);
 
+            // Étape 2 : Intelligence Artificielle (GPT Structure)
             const structResp = await fetch("http://localhost:8000/structure", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ topic: query, context: data.markdown }),
+                body: JSON.stringify({
+                    topic: query,
+                    context: data.markdown,
+                    doc_id: data.doc_id
+                }),
             });
             const structData = await structResp.json();
             setStructure(structData);
@@ -144,7 +152,11 @@ export default function ResearchTerminal({ onStructureReady }: any) {
                 )}
             </AnimatePresence>
 
-            <ContentPreview structure={structure} query={query} onForgeReady={(data: any) => onStructureReady(data, query)} />
+            <ContentPreview
+                structure={structure}
+                query={query}
+                onForgeReady={(data: any) => onStructureReady(data, query, lastScanResults)}
+            />
         </div>
     );
 }

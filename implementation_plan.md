@@ -3,14 +3,15 @@
 Ce document sert de feuille de route pour la construction de DocTerra, un outil de recherche et de synthèse de documents premium.
 
 ## 🏁 État Actuel
-- Design System Quantum (Nebula, Glassmorphism, Animations) validé.
-- Backend FastAPI connecté avec Firecrawl et Generation DOCX.
-- Structure Dual-View (Nexus + Forge) implémentée mais non activée par défaut.
+- Design System Quantum validé.
+- Backend FastAPI fonctionnel.
+- Repository GitHub : [docterra-](https://github.com/DIETRICH-ALBAN/docterra-.git) (CI/CD prêt).
+- Structure Dual-View (Nexus + Forge) opérationnelle.
 
 ---
 
 ## 🏗️ Phase 1 : Consolidation UX & Transition
-*Objectif : Rendre le passage de la recherche à l'édition fluide.*
+- [x] Initialisation GitHub et Push initial.
 - [ ] Connecter le bouton "Entrer dans la Forge" au système de routage interne.
 - [ ] Gérer l'état de la recherche (Query + Structure) à travers les phases.
 - [ ] **Démo : Un écran splité fonctionnel avec Nexus à gauche et Document à droite.**
