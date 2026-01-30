@@ -7,9 +7,9 @@ Réorienter DocTerra vers une philosophie "Ingestion -> Itération -> Output Mul
 
 ## 🧹 Phase 1 : Nettoyage & Simplification (Clean Slate)
 *Objectif : Retirer ce qui ne correspond plus à la vision pour partir sur une base saine.*
-- [ ] **Tâche 1.1** : Supprimer l'onglet "Modèles" et le fichier `templates.json`.
-- [ ] **Tâche 1.2** : Vider l'interface de "Forge" par défaut (Page Blanche).
-- [ ] **Tâche 1.3** : Simplifier le Backend pour ne plus générer de structure automatique au démarrage.
+- [x] **Tâche 1.1** : Supprimer l'onglet "Modèles" et le fichier `templates.json`.
+- [x] **Tâche 1.2** : Vider l'interface de "Forge" par défaut (Page Blanche).
+- [x] **Tâche 1.3** : Simplifier le Backend pour ne plus générer de structure automatique au démarrage.
 
 ## 📥 Phase 2 : Ingestion de Sources (Nexus V2)
 *Objectif : Créer la porte d'entrée unique par les sources.*
