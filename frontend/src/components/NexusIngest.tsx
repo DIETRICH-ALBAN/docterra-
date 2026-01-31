@@ -59,11 +59,27 @@ export default function NexusIngest({ project_id, onSourceAdded }: { project_id:
         }
     };
 
+    // Détection intelligente du contenu collé
+    const handlePaste = async (e: React.ClipboardEvent) => {
+        const text = e.clipboardData.getData('text');
+        if (text.startsWith('http')) {
+            e.preventDefault();
+            setUrlInput(text);
+            // Optionnel: Auto-submit si on veut être très agressif
+            // handleUrlSubmit(e); 
+        }
+    };
+
     return (
-        <div className="flex flex-col gap-6 p-4">
-            {/* Zone d'Ingestion Unifiée */}
+        <div className="flex flex-col gap-6 p-4 w-full">
+            {/* OMNI-BOX : La seule zone d'interaction */}
             <div
-                className={`border-2 border-dashed rounded-2xl p-6 transition-all cursor-pointer ${isDragging ? 'border-accent bg-accent/10' : 'border-white/10 hover:border-white/20'}`}
+                className={`
+                    relative group overflow-hidden
+                    bg-[#050505] border-2 border-dashed rounded-3xl p-8 transition-all duration-300
+                    flex flex-col items-center justify-center text-center gap-6
+                    ${isDragging ? 'border-accent bg-accent/5 scale-[1.02]' : 'border-white/10 hover:border-white/20 hover:bg-white/[0.02]'}
+                `}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={(e) => {
@@ -72,7 +88,7 @@ export default function NexusIngest({ project_id, onSourceAdded }: { project_id:
                     const file = e.dataTransfer.files[0];
                     if (file) handleFileUpload(file);
                 }}
-                onClick={() => document.getElementById('file-upload')?.click()}
+                onPaste={handlePaste}
             >
                 <input
                     type="file"
@@ -83,41 +99,54 @@ export default function NexusIngest({ project_id, onSourceAdded }: { project_id:
                         if (file) handleFileUpload(file);
                     }}
                 />
-                <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
-                        <Upload size={20} className="text-white/40" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <span className="text-sm font-bold text-white">Glissez vos fichiers ici</span>
-                        <span className="text-xs text-white/40">PDF, DOCX, TXT (Max 50MB)</span>
-                    </div>
 
-                    <div className="flex items-center gap-3 w-full" onClick={(e) => e.stopPropagation()}>
-                        <div className="h-[1px] bg-white/10 flex-1" />
-                        <span className="text-[10px] uppercase font-black text-white/20">OU</span>
-                        <div className="h-[1px] bg-white/10 flex-1" />
-                    </div>
-
-                    <form onSubmit={handleUrlSubmit} className="w-full flex gap-2" onClick={(e) => e.stopPropagation()}>
-                        <div className="relative flex-1">
-                            <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
-                            <input
-                                type="text"
-                                placeholder="Collez une URL..."
-                                value={urlInput}
-                                onChange={(e) => setUrlInput(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-accent/50 transition-colors"
-                            />
+                {/* Icône Centrale Animée */}
+                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                    {isProcessing ? (
+                        <Loader2 size={24} className="text-accent animate-spin" />
+                    ) : (
+                        <div className="relative">
+                            <Upload size={24} className="text-white/40 group-hover:text-white transition-colors" />
+                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-accent rounded-full animate-pulse" />
                         </div>
-                        <button
-                            type="submit"
-                            disabled={isProcessing}
-                            className="bg-white text-black px-3 rounded-xl hover:bg-white/90 transition-colors disabled:opacity-50"
-                        >
-                            {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                        </button>
-                    </form>
+                    )}
                 </div>
+
+                {/* Instructions Unifiées */}
+                <div className="z-10 flex flex-col gap-2">
+                    <h3 className="text-lg font-bold text-white">Déposez vos sources ici</h3>
+                    <p className="text-xs text-white/40 font-medium">
+                        Fichiers (PDF, DOCX) ou <span className="text-white/60 border-b border-white/20">collez une URL</span>
+                    </p>
+                </div>
+
+                {/* Input URL Discret mais Puissant */}
+                <div className="w-full max-w-sm relative mt-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <LinkIcon size={12} className="text-white/30" />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Ou collez un lien Web / YouTube..."
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit(e)}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-9 pr-10 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-all font-mono"
+                    />
+                    <button
+                        onClick={handleUrlSubmit}
+                        disabled={!urlInput || isProcessing}
+                        className="absolute inset-y-1 right-1 px-2 bg-white/10 hover:bg-accent hover:text-black rounded-lg text-white/40 transition-colors disabled:opacity-0"
+                    >
+                        <Check size={12} />
+                    </button>
+                </div>
+
+                {/* Zone de clic globale */}
+                <div
+                    className="absolute inset-0 z-0 cursor-pointer"
+                    onClick={() => document.getElementById('file-upload')?.click()}
+                />
             </div>
         </div>
     );

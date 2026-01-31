@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
-import UploadZone from "@/components/UploadZone";
-import ResearchTerminal from "@/components/ResearchTerminal";
+import NexusIngest from "@/components/NexusIngest"; // Import correct
 import Forge from "@/components/Forge";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -17,29 +16,6 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  // Bypass pour le test visuel - Ctrl + Shift + F
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'F' && e.ctrlKey && e.shiftKey) {
-        setPhase('forge');
-        setStructure({
-          title: "LE FUTUR DE L'IA EN AFRIQUE",
-          sections: [
-            { title: "Introduction Stratégique", brief: "Analyse des hubs technologiques de Douala à Nairobi." },
-            { title: "Infrastructure & Connectivité", brief: "L'impact de la 5G sur le développement local." },
-            { title: "Éducation & Capital Humain", brief: "La formation des talents WebTerra." }
-          ]
-        });
-        setSources([
-          { title: "Rapport ONU 2025", type: "pdf", status: "analysed" },
-          { title: "Étude Statistique Afrique", type: "web", status: "analysed" }
-        ]);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleLoadProject = async (docId: string) => {
@@ -60,15 +36,14 @@ export default function Home() {
     }
   };
 
-  if (!mounted) return <div className="bg-background min-h-screen" />;
-
-  const handleStructureGenerated = (data: any, searchQuery: string, scanSources: any[], docId?: string) => {
-    setStructure(data);
-    setQuery(searchQuery);
-    setSources(scanSources);
-    if (docId) setProjectId(docId);
-    setPhase('forge');
+  const handleSourceAdded = (newSource: any) => {
+    // Quand une source est ajoutée, on met à jour l'état local et on prépare le terrain
+    setSources(prev => [...prev, newSource]);
+    // Note: On reste sur l'écran d'accueil pour permettre d'ajouter d'autres sources
+    // Un bouton "Lancer la Forge" (swipe) devra être ajouté pour passer à l'étape suivante quand l'user est prêt.
   };
+
+  if (!mounted) return <div className="bg-background min-h-screen" />;
 
   return (
     <main className="flex min-h-screen selection:bg-accent/40 selection:text-white bg-[#050505] overflow-hidden">
@@ -81,48 +56,59 @@ export default function Home() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="flex-1 px-16 py-12 flex flex-col gap-16 overflow-y-auto max-h-screen custom-scrollbar"
+            className="flex-1 flex flex-col relative overflow-hidden"
           >
-            {/* Header Minimaliste */}
-            <header className="flex items-center justify-between">
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-4"
-              >
-                <div className="flex flex-col items-end">
-                  <span className="text-sm font-black tracking-tight uppercase">User Alpha</span>
-                  <span className="text-[10px] text-accent font-bold uppercase tracking-widest leading-none">ID: WT-0912</span>
+            {/* Header Minimaliste - Identité de Marque */}
+            <header className="flex items-center justify-between p-8 z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-accent text-black flex items-center justify-center font-black italic shadow-[0_0_20px_rgba(34,211,238,0.2)]">WT</div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-white tracking-widest uppercase leading-none">WebTerra</span>
+                  <span className="text-[10px] text-white/30 font-mono">Document Factory v2.0</span>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-accent to-secondary p-[1px] group cursor-pointer">
-                  <div className="w-full h-full rounded-2xl bg-[#050505] flex items-center justify-center text-sm font-black italic group-hover:bg-accent group-hover:text-black transition-all">
-                    UA
-                  </div>
-                </div>
-              </motion.div>
-
-              <div className="flex items-center gap-8 text-[11px] font-black text-white/20 uppercase tracking-[0.2em]">
-                <span className="hover:text-white transition-colors cursor-pointer border-b-2 border-accent pb-1">Vue d'ensemble</span>
-                <span className="hover:text-white transition-colors cursor-pointer">Analytiques</span>
-                <span className="hover:text-white transition-colors cursor-pointer">Équipe</span>
               </div>
             </header>
 
-            {/* Content Area */}
-            <div className="max-w-6xl w-full mx-auto flex flex-col gap-20">
-              <UploadZone />
-              <div className="flex flex-col gap-4 border-t border-white/5 pt-16">
-                <ResearchTerminal onStructureReady={handleStructureGenerated} />
-              </div>
+            {/* Content Area : Focus Ingestion (Centré) */}
+            <div className="flex-1 flex flex-col items-center justify-center -mt-20 z-10 relative px-4">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="flex flex-col items-center gap-10 max-w-3xl w-full"
+              >
+                {/* Titre Accrocheur */}
+                <div className="text-center space-y-4">
+                  <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter">
+                    Nouvelle <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white">Mission</span>
+                  </h1>
+                  <p className="text-white/40 text-sm md:text-base max-w-lg mx-auto font-medium">
+                    Déposez vos documents bruts ou URLs. L'IA les transformera en rapports stratégiques, slides et synthèses.
+                  </p>
+                </div>
+
+                {/* Composant d'Ingestion (La "Star") */}
+                <div className="w-full bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-3 shadow-[0_0_60px_rgba(0,0,0,0.5)] ring-1 ring-white/5 hover:ring-accent/20 transition-all duration-500 group">
+                  <div className="bg-[#050505] rounded-2xl border border-dashed border-white/10 group-hover:border-accent/30 transition-colors">
+                    <NexusIngest project_id="" onSourceAdded={handleSourceAdded} />
+                  </div>
+                </div>
+
+                {/* Indicateurs de Confiance */}
+                <div className="flex gap-8 text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">
+                  <span className="flex items-center gap-2"><div className="w-1 h-1 bg-green-500 rounded-full" /> Sécurisé</span>
+                  <span className="flex items-center gap-2"><div className="w-1 h-1 bg-blue-500 rounded-full" /> PDF / DOCX</span>
+                  <span className="flex items-center gap-2"><div className="w-1 h-1 bg-purple-500 rounded-full" /> Web Scraping</span>
+                </div>
+              </motion.div>
             </div>
 
-            <footer className="mt-auto py-8 border-t border-white/5 flex justify-between items-center text-[10px] text-white/10 font-bold uppercase tracking-[0.4em]">
-              <span>© 2026 WebTerra Agency - Core System</span>
-              <div className="flex gap-6">
-                <span>Status: Optimal</span>
-                <span>Latency: {14 + Math.floor(Math.random() * 5)}ms</span>
-              </div>
-            </footer>
+            {/* Background Elements (Ambiance) */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+              <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px]" />
+              <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[150px]" />
+            </div>
+
           </motion.section>
         ) : (
           <Forge
