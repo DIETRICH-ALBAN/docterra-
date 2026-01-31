@@ -4,11 +4,18 @@ from fastapi.responses import FileResponse
 from services.scout import DocScout
 from services.writer import DocWriter
 from services.generator import DocGenerator
-from services.database import DatabaseService
-from services.slides import SlidesGenerator # Nouveau service
+from services.database import DatabaseService, supabase
+from services.slides import SlidesGenerator 
+from services.firecrawl_service import FirecrawlService
+from services.openai_service import OpenAIService
+from services.file_extractor import extract_text_from_file
+
 import os
 import uuid
-from typing import Optional
+import shutil
+from typing import Optional, List
+from pydantic import BaseModel
+from datetime import datetime
 
 app = FastAPI(title="DocTerra API", version="1.0")
 
@@ -18,6 +25,16 @@ writer = DocWriter()
 generator = DocGenerator(output_dir="exports")
 slides_gen = SlidesGenerator(output_dir="exports")
 db = DatabaseService()
+firecrawl = FirecrawlService()
+openai_svc = OpenAIService()
+
+class IngestUrlRequest(BaseModel):
+    url: str
+    project_id: str
+
+class AnalyzeRequest(BaseModel):
+    project_id: str
+    source_id: str
 
 # Configuration CORS
 app.add_middleware(
@@ -179,6 +196,102 @@ async def download_file(filename: str):
         
         return FileResponse(file_path, media_type=media_type, filename=filename)
     raise HTTPException(status_code=404, detail="Fichier introuvable")
+
+# --- NOUVEAUX ENDPOINTS D'INGESTION ---
+
+@app.post("/api/ingest/file")
+async def ingest_file(project_id: str, file: UploadFile = File(...)):
+    """Ingère un fichier PDF/DOCX et extrait le texte."""
+    file_id = str(uuid.uuid4())
+    temp_dir = "temp"
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+        
+    file_path = os.path.join(temp_dir, f"{file_id}_{file.filename}")
+    
+    with open(file_path, "wb+") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    try:
+        text_content = extract_text_from_file(file_path, file.filename)
+        
+        source_data = {
+            "document_id": project_id,
+            "title": file.filename,
+            "source_type": "file",
+            "content": text_content,
+            "status": "raw"
+        }
+        
+        res = supabase.table("sources").insert(source_data).execute()
+        source = res.data[0]
+        
+        # Cleanup
+        os.remove(file_path)
+        
+        return {"status": "success", "source": source}
+    except Exception as e:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/ingest/url")
+async def ingest_url(request: IngestUrlRequest):
+    """Scrape une URL via Firecrawl."""
+    try:
+        res = firecrawl.scrape_url(request.url)
+        
+        source_data = {
+            "document_id": request.project_id,
+            "title": res.get("title", request.url),
+            "url": request.url,
+            "source_type": "web",
+            "content": res.get("markdown", ""),
+            "status": "raw"
+        }
+        
+        db_res = supabase.table("sources").insert(source_data).execute()
+        return {"status": "success", "source": db_res.data[0]}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/analyze/{source_id}")
+async def analyze_source(source_id: str):
+    """Analyse une source spécifique pour générer un résumé structuré."""
+    try:
+        # Récupérer la source
+        res = supabase.table("sources").select("*").eq("id", source_id).single().execute()
+        source = res.data
+        
+        analysis = await openai_svc.analyze_source(source["title"], source["content"])
+        
+        # Mettre à jour la source avec le résumé
+        summary_text = analysis.get("executive_summary", "Pas de résumé.")
+        supabase.table("sources").update({"summary": summary_text, "status": "analysed"}).eq("id", source_id).execute()
+        
+        return {"status": "success", "analysis": analysis}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/synthesize/{project_id}")
+async def synthesize_project(project_id: str):
+    """Génère un résumé global (Premier jet du Canvas) à partir de toutes les sources du projet."""
+    try:
+        # Récupérer toutes les sources du projet
+        res = supabase.table("sources").select("*").eq("document_id", project_id).execute()
+        sources = res.data
+        
+        if not sources:
+            raise HTTPException(status_code=400, detail="Aucune source trouvée pour ce projet.")
+            
+        synthesis = await openai_svc.generate_global_summary(sources)
+        
+        # Mettre à jour le document Canvas
+        supabase.table("documents").update({"content": synthesis}).eq("id", project_id).execute()
+        
+        return {"status": "success", "synthesis": synthesis}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

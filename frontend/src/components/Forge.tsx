@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import NexusIngest from "./NexusIngest";
 
-export default function Forge({ structure, query, sources = [], onBack }: any) {
+export default function Forge({ projectId, structure, query, sources = [], onBack }: any) {
     const [selectedSection, setSelectedSection] = useState<number | null>(null);
     const [localSources, setLocalSources] = useState(sources);
     const [chatInput, setChatInput] = useState("");
@@ -214,13 +214,9 @@ export default function Forge({ structure, query, sources = [], onBack }: any) {
                                 </div>
                                 <h3 className="text-[11px] uppercase tracking-[0.4em] font-black text-white/40">Nexus des Sources</h3>
                             </div>
-                            <motion.button
-                                whileHover={{ rotate: 90 }}
-                                className="p-2 bg-white/5 rounded-lg text-white/20 hover:text-accent transition-colors"
-                            >
-                                <Plus size={16} />
-                            </motion.button>
                         </div>
+
+                        <NexusIngest project_id={projectId} onSourceAdded={handleAddSource} />
 
                         {/* Source Cards */}
                         <div className="flex flex-col gap-3">

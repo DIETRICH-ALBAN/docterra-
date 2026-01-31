@@ -14,6 +14,7 @@ export default function ResearchTerminal({ onStructureReady }: any) {
     const [result, setResult] = useState<string | null>(null);
     const [structure, setStructure] = useState<any | null>(null);
     const [lastScanResults, setLastScanResults] = useState<any[]>([]);
+    const [currentDocId, setCurrentDocId] = useState<string | null>(null);
 
     useEffect(() => {
         setMounted(true);
@@ -37,6 +38,7 @@ export default function ResearchTerminal({ onStructureReady }: any) {
             setLogs(prev => [...prev, "Accès au Web mondial via Node AG-1...", "Sources identifiées. Extraction en cours...", "Formatage Markdown académique..."]);
             setResult(data.markdown);
             setLastScanResults(data.results || []);
+            setCurrentDocId(data.doc_id);
 
             // Étape 2 : Intelligence Artificielle (GPT Structure)
             const structResp = await fetch("http://localhost:8000/structure", {
@@ -155,7 +157,7 @@ export default function ResearchTerminal({ onStructureReady }: any) {
             <ContentPreview
                 structure={structure}
                 query={query}
-                onForgeReady={(data: any) => onStructureReady(data, query, lastScanResults)}
+                onForgeReady={(data: any) => onStructureReady(data, query, lastScanResults, currentDocId)}
             />
         </div>
     );

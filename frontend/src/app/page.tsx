@@ -13,6 +13,7 @@ export default function Home() {
   const [structure, setStructure] = useState<any>(null);
   const [query, setQuery] = useState("");
   const [sources, setSources] = useState<any[]>([]);
+  const [projectId, setProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -46,6 +47,7 @@ export default function Home() {
       const resp = await fetch(`http://localhost:8000/documents/${docId}`);
       const data = await resp.json();
 
+      setProjectId(docId);
       setStructure({
         title: data.document.title,
         sections: data.sections
@@ -60,10 +62,11 @@ export default function Home() {
 
   if (!mounted) return <div className="bg-background min-h-screen" />;
 
-  const handleStructureGenerated = (data: any, searchQuery: string, scanSources: any[]) => {
+  const handleStructureGenerated = (data: any, searchQuery: string, scanSources: any[], docId?: string) => {
     setStructure(data);
     setQuery(searchQuery);
     setSources(scanSources);
+    if (docId) setProjectId(docId);
     setPhase('forge');
   };
 
@@ -123,6 +126,7 @@ export default function Home() {
           </motion.section>
         ) : (
           <Forge
+            projectId={projectId}
             structure={structure}
             query={query}
             sources={sources}
