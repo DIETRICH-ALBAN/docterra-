@@ -37,3 +37,41 @@ class FirecrawlService:
             }
         except Exception as e:
             return {"error": str(e), "markdown": f"Erreur lors du scraping de {url}"}
+
+    def search(self, query: str, limit: int = 5) -> list:
+        """
+        Recherche des sources sur le web via l'API Firecrawl.
+        """
+        if not self.api_key:
+            return [
+                {"title": f"Source simulée 1 pour {query}", "url": "https://example.com/1", "description": "Snippet de démonstration..."},
+                {"title": f"Source simulée 2 pour {query}", "url": "https://example.com/2", "description": "Un autre snippet de démonstration..."}
+            ]
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "query": query,
+            "limit": limit
+        }
+        
+        try:
+            response = requests.post(f"{self.base_url}/search", json=payload, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            
+            # Formatage des résultats pour le frontend
+            results = []
+            for item in data.get("data", []):
+                results.append({
+                    "title": item.get("title", "Sans titre"),
+                    "url": item.get("url", ""),
+                    "description": item.get("description", "")
+                })
+            return results
+        except Exception as e:
+            print(f"Firecrawl Search Error: {e}")
+            return []

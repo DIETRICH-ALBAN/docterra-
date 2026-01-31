@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import NexusIngest from "@/components/NexusIngest"; // Import correct
 import Forge from "@/components/Forge";
 import { motion, AnimatePresence } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
@@ -90,9 +91,27 @@ export default function Home() {
                 {/* Composant d'Ingestion (La "Star") */}
                 <div className="w-full bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-3 shadow-[0_0_60px_rgba(0,0,0,0.5)] ring-1 ring-white/5 hover:ring-accent/20 transition-all duration-500 group">
                   <div className="bg-[#050505] rounded-2xl border border-dashed border-white/10 group-hover:border-accent/30 transition-colors">
-                    <NexusIngest project_id="" onSourceAdded={handleSourceAdded} />
+                    <NexusIngest project_id={projectId || "temp-new"} onSourceAdded={handleSourceAdded} />
                   </div>
                 </div>
+
+                {/* Bouton de Transition (SwipeTrigger) */}
+                <AnimatePresence>
+                  {sources.length > 0 && (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      onClick={() => setPhase('forge')}
+                      className="group relative flex items-center gap-6 bg-white text-black px-10 py-5 rounded-full font-black text-xs uppercase tracking-[0.3em] overflow-hidden shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-accent/20 transition-all"
+                    >
+                      <span className="relative z-10 flex items-center gap-3">
+                        Lancer la Forge <ChevronRight size={16} className="group-hover:translate-x-2 transition-transform" />
+                      </span>
+                      <div className="absolute inset-0 bg-accent translate-x-[-101%] group-hover:translate-x-0 transition-transform duration-500" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
 
                 {/* Indicateurs de Confiance */}
                 <div className="flex gap-8 text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">

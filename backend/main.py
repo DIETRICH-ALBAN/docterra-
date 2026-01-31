@@ -161,7 +161,19 @@ async def refine_section(payload: dict):
     except Exception as e:
          return {"content": f"Erreur d'alchimie : {str(e)}", "error": True}
 
-# --- NOUVEAUX ENDPOINTS DE PRISME (MULTI-FORMAT) ---
+@app.post("/api/scout/search")
+async def scout_search(request: dict):
+    query = request.get("query")
+    if not query:
+        raise HTTPException(status_code=400, detail="Query manquante.")
+    
+    try:
+        results = firecrawl.search(query)
+        return {"status": "success", "results": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- EXPORTS (Prism) ---
 
 @app.post("/prism/report")
 async def generate_report(payload: dict):
