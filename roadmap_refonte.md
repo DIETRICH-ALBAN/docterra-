@@ -1,45 +1,51 @@
-# Roadmap de Refonte (Source-First DocTerra V2.1)
+# Roadmap de Refonte (Source-First DocTerra V2.2)
 
-## 🎯 Vision : La Document Factory Intelligente
-Unifier l'importation de connaissances et la production de livrables dans un workflow fluide et premium.
-
----
-
-## 🧹 Phase 1 & 2 : Nettoyage et Ingestion (Terminées) ✅
-*   Architecture Backend Ingestion (PDF/URL).
-*   Nettoyage UI (Suppression des anciens modèles).
-*   Base de l'accueil "Command Center".
+## 🎯 Vision : Le Studio de Production Alchimique
+L'utilisateur n'est plus un spectateur, c'est le chef d'orchestre d'une IA qui cherche, trie et transforme.
 
 ---
 
-## 🏗️ Phase 3 : Intel Center & Transition UX (PLANIFICATION)
-*Objectif : Différencier l'importation manuelle de la découverte assistée.*
-
-### 3.1 L'Interface d'Accueil Duale
-- [ ] **Multi-Upload (Le "Apport")** : Refonte de NexusIngest pour supporter le drag-and-drop de fichiers multiples simultanément avec file d'attente.
-- [ ] **Autonomous Scout (La "Découverte")** : Intégration d'un agent de recherche qui scanne le Web/YouTube selon un prompt et propose une liste de sources à "Ingérer" via Firecrawl.
-- [ ] **Omni-Box UI** : Unifier ces deux modes sans confusion visuelle (Deux onglets ou zone de drop hybride).
-
-### 3.2 Navigation & Menu
-- [ ] **Archives** : Liste fonctionnelle des projets passés (Titre, Date, Nb de sources) avec prévisualisation rapide au survol.
-- [ ] **Projets** : Système de dossiers/missions.
-- [ ] **Settings** : Configuration des modèles (GPT-4 / Claude) et des préférences de sortie.
-
-### 3.3 Le Workflow (Le Swipe)
-- [ ] **Transition State** : Animation fluide entre l'Accueil et la Forge avec transfert du contexte (ProjectID + Sources).
+## 🧹 Phase 1 & 2 : Nettoyage et Ingestion (Validées) ✅
+*   Architecture Backend Ingestion (Fichiers/Web).
+*   Nettoyage des anciens composants.
 
 ---
 
-## 🎨 Phase 4 : La Forge (Studio de Production)
-*Objectif : Transformer l'intel en livrables.*
+## 🏗️ Phase 3 : L'Intel Center & La Transition (DÉTAILLÉ)
+*Objectif : Une porte d'entrée unique et puissante. Design "Soft & Elegant".*
 
-### 4.1 Layout "Production Standard"
-- [ ] **Intel Panel (Gauche)** : Gestionnaire de sources contextuel. Visualisation du texte extrait.
-- [ ] **Canvas (Centre)** : Éditeur dynamique pré-rempli par la synthèse initiale.
-- [ ] **Studio (Droite)** : Outil de transformation (Prisme) vers Slides, DOCX, ou Audio.
+### 3.1 Interface "Monolith V3" (Accueil)
+- [ ] **Design Soft** : Un seul conteneur central, glassmorphism profond, coins 3rem.
+- [ ] **Dualité Verticale** : 
+    - *Haut* : Investigation (Search/Chat).
+    - *Milieu* : Séparateur "Glow Line" avec label "OU".
+    - *Bas* : Dropzone discrète pour multi-upload.
 
-### 4.2 Chat Co-Pilot Contextuel
-- [ ] **Floating Bar** : Chat en bas de l'écran avec capacité d'écriture directe dans le Canvas.
+### 3.2 Workflow "Investigation / Scout" 🔍
+- [ ] **Instant Search** : Quand l'utilisateur tape un sujet, appel à `/api/scout/search`.
+- [ ] **Curation UI** : Affichage d'une grille de résultats (Web/Videos) avec checkboxes. 
+- [ ] **Validation** : L'utilisateur coche ce qu'il veut avant d'importer réellement.
+
+### 3.3 Multi-Upload & Statut 📁
+- [ ] **Multi-Select** : Support de l'upload simultané de plusieurs fichiers.
+- [ ] **Intel Pills** : Petits badges pour chaque source ajoutée (avec bouton X pour retirer).
+
+### 3.4 La Transition "The Swipe" 🚀
+- [ ] **Trigger** : Bouton "Lancer la Mission" visible uniquement si sources > 0.
+- [ ] **Animation** : L'accueil monte (Slide Up), la Forge arrive par le bas avec un effet de profondeur.
 
 ---
-*Statut : Planification V2.1 validée. Prêt pour mise à jour des documents.*
+
+## 🎨 Phase 4 : La Forge (Cockpit 3-Colonnes)
+*Objectif : Travailler la matière grise.*
+
+### 4.1 Layout Cockpit
+- [ ] **Intel (Gauche)** : Liste des sources chargées.
+- [ ] **Canvas (Centre)** : Éditeur Serif premium.
+- [ ] **Studio (Droite)** : Centre d'export (Slides, Rapport, Audio).
+
+### 4.2 Copilot (Chat Bar)
+- [ ] **Floating Input** : Barre flottante en bas du Canvas pour commander l'IA.
+
+---
+*Statut : Planification V2.2 détaillée. En attente de validation finale.*
