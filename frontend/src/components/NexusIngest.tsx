@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, Link as LinkIcon, FileText, Check, Loader2, X, Search, Globe, Youtube, Zap, Sparkles } from "lucide-react";
+import { Upload, FileText, Check, Loader2, X, Search, Globe, Youtube, Zap, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function NexusIngest({ project_id, onSourceAdded }: { project_id: string, onSourceAdded: (source: any) => void }) {
@@ -91,18 +91,71 @@ export default function NexusIngest({ project_id, onSourceAdded }: { project_id:
     };
 
     return (
-        <div className="flex flex-col gap-10 w-full max-w-6xl mx-auto items-center">
+        <div className="flex flex-col gap-10 w-full max-w-4xl mx-auto items-center">
 
-            <div className="flex flex-col md:flex-row gap-8 w-full items-stretch">
-                {/* BLOC GAUCHE : IMPORTATION LOCALE */}
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
+            {/* LE MONOLITHE D'INGESTION */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full bg-[#080808]/80 backdrop-blur-3xl border border-white/5 rounded-[3rem] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.5)] ring-1 ring-white/5"
+            >
+                {/* SECTION HAUT : INVESTIGATION (Prompt First) */}
+                <div className="p-10 md:p-14 flex flex-col gap-8">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+                            <Sparkles size={18} />
+                        </div>
+                        <h3 className="text-xl font-black uppercase tracking-tighter text-white">Investigation IA</h3>
+                    </div>
+
+                    <form onSubmit={handleUrlSubmit} className="relative group">
+                        <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-white/10 group-focus-within:text-accent transition-colors">
+                            <Search size={20} />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Entrez un sujet, une URL ou un lien YouTube..."
+                            value={urlInput}
+                            onChange={(e) => setUrlInput(e.target.value)}
+                            className="w-full bg-white/[0.02] border border-white/10 rounded-3xl py-7 pl-16 pr-32 text-lg text-white placeholder:text-white/10 focus:outline-none focus:border-accent/40 focus:bg-white/[0.04] transition-all font-medium"
+                        />
+                        <button
+                            type="submit"
+                            disabled={!urlInput || isSearching}
+                            className="absolute right-3 top-3 bottom-3 px-8 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:bg-accent hover:scale-105 active:scale-95 disabled:opacity-0"
+                        >
+                            {isSearching ? <Loader2 className="animate-spin" size={16} /> : "Analyser"}
+                        </button>
+                    </form>
+
+                    <div className="flex items-center gap-4 pt-2">
+                        <span className="text-[10px] font-black text-white/10 uppercase tracking-[0.3em] flex-shrink-0">Inspiration :</span>
+                        {['Analyse Marché IA', 'Rapport Tesla 2024', 'SOP Agence Web'].map((s) => (
+                            <button
+                                key={s}
+                                type="button"
+                                onClick={() => { setUrlInput(s); }}
+                                className="text-[10px] text-white/30 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full border border-white/5 transition-all"
+                            >
+                                {s}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* DIVISEUR ÉLÉGANT */}
+                <div className="relative h-[1px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 bg-[#080808] text-[9px] font-black text-white/10 uppercase tracking-[0.5em]">
+                        OU
+                    </div>
+                </div>
+
+                {/* SECTION BAS : DROPZONE SOFTE */}
+                <div
                     className={`
-                        flex-1 relative group rounded-[2.5rem] p-10 
-                        bg-[#080808] border border-white/5 transition-all duration-500
-                        flex flex-col items-center justify-center text-center gap-6
-                        ${isDragging ? 'border-accent/40 bg-accent/[0.02] scale-[1.02]' : 'hover:border-white/10 hover:bg-white/[0.01]'}
+                        p-10 md:p-14 transition-all duration-500 cursor-pointer
+                        flex flex-col items-center justify-center text-center gap-4
+                        ${isDragging ? 'bg-accent/[0.03]' : 'hover:bg-white/[0.01]'}
                     `}
                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                     onDragLeave={() => setIsDragging(false)}
@@ -111,85 +164,30 @@ export default function NexusIngest({ project_id, onSourceAdded }: { project_id:
                         setIsDragging(false);
                         handleFileUpload(e.dataTransfer.files);
                     }}
-                    onClick={() => document.getElementById('file-upload')?.click()}
+                    onClick={() => document.getElementById('file-upload-soft')?.click()}
                 >
-                    <input type="file" id="file-upload" className="hidden" multiple onChange={(e) => handleFileUpload(e.target.files)} />
+                    <input type="file" id="file-upload-soft" className="hidden" multiple onChange={(e) => handleFileUpload(e.target.files)} />
 
-                    <div className="w-20 h-20 rounded-3xl bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:bg-accent/10 transition-all duration-500 shadow-2xl">
-                        <Upload size={32} className="text-white/20 group-hover:text-accent transition-colors" />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <h3 className="text-xl font-black uppercase tracking-tighter text-white">Importer</h3>
-                        <p className="text-xs text-white/30 font-medium max-w-[200px]">
-                            PDF, DOCX ou archives locales. Glissez-déposez vos fichiers.
-                        </p>
-                    </div>
-
-                    <div className="absolute inset-0 rounded-[2.5rem] border border-accent/0 group-hover:border-accent/10 transition-all pointer-events-none" />
-                </motion.div>
-
-                {/* BLOC DROIT : DÉCOUVERTE WEB / CHAT */}
-                <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex-[1.2] flex flex-col gap-6"
-                >
-                    <div className="bg-[#080808] border border-white/5 rounded-[2.5rem] p-10 flex flex-col gap-8 h-full justify-center">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
-                                <Search size={20} />
-                            </div>
-                            <div className="flex flex-col">
-                                <h3 className="text-xl font-black uppercase tracking-tighter text-white">Investigation</h3>
-                                <p className="text-xs text-white/30">Laissez l'IA explorer le web pour vous.</p>
-                            </div>
+                    <div className="flex items-center gap-6">
+                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-white/20">
+                            <Upload size={20} />
                         </div>
-
-                        <form onSubmit={handleUrlSubmit} className="relative group/input">
-                            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-                                <Sparkles size={16} className="text-white/20 group-focus-within/input:text-accent transition-colors" />
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Un sujet, une URL, un lien YouTube..."
-                                value={urlInput}
-                                onChange={(e) => setUrlInput(e.target.value)}
-                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-5 pl-14 pr-20 text-sm text-white focus:outline-none focus:border-accent/40 focus:bg-white/[0.05] transition-all font-medium"
-                            />
-                            <button
-                                type="submit"
-                                disabled={!urlInput || isSearching}
-                                className="absolute right-2 top-2 bottom-2 px-6 bg-accent text-black rounded-xl font-black text-[10px] uppercase tracking-tighter transition-all hover:bg-white disabled:opacity-0"
-                            >
-                                {isSearching ? <Loader2 className="animate-spin" size={14} /> : "Analyser"}
-                            </button>
-                        </form>
-
-                        <div className="flex items-center gap-4 pt-4 overflow-x-auto no-scrollbar">
-                            <span className="text-[10px] font-black text-white/10 uppercase tracking-widest flex-shrink-0">Suggestions :</span>
-                            {['Analyse Marché IA', 'Rapport Tesla 2024', 'SOP Agence Web'].map((s) => (
-                                <button
-                                    key={s}
-                                    onClick={() => { setUrlInput(s); }}
-                                    className="text-[10px] text-white/30 hover:text-accent hover:bg-accent/5 px-3 py-1.5 rounded-full border border-white/5 whitespace-nowrap transition-all"
-                                >
-                                    {s}
-                                </button>
-                            ))}
+                        <div className="flex flex-col text-left">
+                            <span className="text-sm font-bold text-white/60">Déposez vos documents locaux</span>
+                            <span className="text-[10px] text-white/20 uppercase tracking-widest font-black">PDF, DOCX, TXT (Max 50MB)</span>
                         </div>
                     </div>
-                </motion.div>
-            </div>
+                </div>
+            </motion.div>
 
-            {/* RÉSULTATS DE L'INVESTIGATION (SCOUT) */}
+            {/* RÉSULTATS DE L'INVESTIGATION (S'AFFICHE EN DESSOUS) */}
             <AnimatePresence>
                 {showDiscovery && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="w-full bg-[#080808] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl"
+                        exit={{ opacity: 0, y: 5 }}
+                        className="w-full bg-[#080808]/60 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl"
                     >
                         <div className="p-8 border-b border-white/5 flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -211,21 +209,18 @@ export default function NexusIngest({ project_id, onSourceAdded }: { project_id:
                                 searchResults.map((result, idx) => (
                                     <motion.div
                                         key={idx}
-                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        initial={{ opacity: 0, scale: 0.98 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         transition={{ delay: idx * 0.05 }}
                                         onClick={() => ingestUrl(result.url)}
-                                        className="group p-5 bg-white/[0.02] border border-white/5 rounded-3xl flex items-start gap-4 hover:bg-accent/[0.03] hover:border-accent/20 transition-all cursor-pointer"
+                                        className="group p-5 bg-white/[0.01] border border-white/5 rounded-[2rem] flex items-start gap-4 hover:bg-accent/[0.03] hover:border-accent/20 transition-all cursor-pointer"
                                     >
-                                        <div className="p-3 bg-white/5 rounded-2xl text-white/30 group-hover:text-accent transition-colors">
-                                            {result.url.includes('youtube') ? <Youtube size={20} /> : <Globe size={20} />}
+                                        <div className="p-3 bg-white/5 rounded-xl text-white/30 group-hover:text-accent transition-colors">
+                                            {result.url.includes('youtube') ? <Youtube size={18} /> : <Globe size={18} />}
                                         </div>
-                                        <div className="flex flex-col gap-1 pr-6 relative w-full">
-                                            <span className="text-sm font-bold text-white/80 line-clamp-1 group-hover:text-white transition-colors">{result.title}</span>
-                                            <p className="text-[10px] text-white/20 line-clamp-2 leading-relaxed">{result.description}</p>
-                                            <div className="absolute right-0 top-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Zap size={14} className="text-accent" />
-                                            </div>
+                                        <div className="flex flex-col gap-1 pr-6 w-full">
+                                            <span className="text-xs font-bold text-white/70 line-clamp-1 group-hover:text-white transition-colors">{result.title}</span>
+                                            <p className="text-[9px] text-white/10 line-clamp-2 leading-relaxed uppercase tracking-tighter">{result.description}</p>
                                         </div>
                                     </motion.div>
                                 ))
